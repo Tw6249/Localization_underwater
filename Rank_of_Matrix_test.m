@@ -17,6 +17,3 @@ eucl_matrix = dist_matrix.^2;
 
 % 验证其秩是否为小于k+3 = 5
 rank(eucl_matrix)
-
-% 添加一行注释测试
-rank(eucl_matrix.^0.5)
