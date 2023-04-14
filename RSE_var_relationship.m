@@ -14,34 +14,42 @@ for num_points = num_min:num_max
     points = rand(num_points, 3) * side; % 生成随机点数量
     
     for range = range_min:range_max
-        % 计算距离矩阵
-        dist_matrix = squareform(pdist(points));
-        % 距离矩阵的平方矩阵
-        dist_matrix_2 = dist_matrix.^2;
-        % 不使用采样，基于通信距离来选择可行距离元素
-        % 通信距离为range
-        range_2 = range^2;
-        S = dist_matrix_2;
+        
+        dist_matrix = squareform(pdist(points)); % 计算距离矩阵
+        dist_matrix_2 = dist_matrix.^2; % 距离矩阵的平方矩阵，一般论文中定义的Euclidean Distance Matrix
+        % 不使用随记采样，基于通信距离来选择可获取的距离矩阵元素
+        % 通信距离range
+        range_2 = range^2; % 通信距离的平方
+        
+        % 采样元素
+        S = dist_matrix_2; 
         S(S<=range_2) = 1;
         S(S>range_2) = 0;
         S = S - diag(diag(S));
 
-        % 矩阵补全，同时指定补全矩阵为对称矩阵，对角元素为0
-        m = num_points;
-        cvx_begin quiet
+        % 计算times次RSE值，然后取平均
+        rse_sum = 0;
+        times = 5;
+        for t = 1:times
+            % 矩阵补全，同时指定补全矩阵为对称矩阵，对角元素为0
+            m = num_points;
+            cvx_begin quiet
             variable X(m,m)
             minimize(norm_nuc(X))
-            subject to 
-                X.*S==dist_matrix_2.*S;
-                diag(X)==zeros(num_points,1);
-                X == X';
-        cvx_end
+            subject to
+            X.*S==dist_matrix_2.*S;
+            diag(X)==zeros(num_points,1);
+            X == X';
+            cvx_end
 
-        X = X.^(1/2);
-        X = X - diag(diag(X));
+            X = X.^(1/2);
+            X = X - diag(diag(X));
 
-        % 归一化重构误差
-        rse = norm(X - dist_matrix,'fro')/norm(dist_matrix,'fro');
+            % 归一化重构误差
+            rse = norm(X - dist_matrix,'fro')/norm(dist_matrix,'fro');
+            rse_sum = rse_sum + rse;
+        end
+        rse = rse_sum/times;
         rse_matrix(num_points-num_min+1, range-range_min+1) = rse;
     end
 end
