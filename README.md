@@ -9,3 +9,4 @@ The project includes 3 main scripts:
 2. RSE_var_relationship: Studying the relationship between the number of nodes or density of the nodes and communicaiton range and the localization effects.
 3. Rank_of_matrix_test: Test the properties of the Euclidean distance matrix.
 
+
