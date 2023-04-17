@@ -31,16 +31,25 @@ for num_points = num_min:num_max
         rse_sum = 0;
         times = 5;
         for t = 1:times
-            % 矩阵补全，同时指定补全矩阵为对称矩阵，对角元素为0
-            m = num_points;
-            cvx_begin quiet
-            variable X(m,m)
-            minimize(norm_nuc(X))
-            subject to
-            X.*S==dist_matrix_2.*S;
-            diag(X)==zeros(num_points,1);
-            X == X';
-            cvx_end
+            %% 采用不同的方法进行矩阵补全
+
+            % 方法一
+            % % 矩阵补全，同时指定补全矩阵为对称矩阵，对角元素为0
+            % m = num_points;
+            % cvx_begin quiet
+            % variable X(m,m)
+            % minimize(norm_nuc(X))
+            % subject to
+            % X.*S==dist_matrix_2.*S;
+            % diag(X)==zeros(num_points,1);
+            % X == X';
+            % cvx_end
+
+            % 方法二：Inexact ALM
+            [X,~,~] = inexact_alm_rpca(S);
+
+            
+
 
             X = X.^(1/2);
             X = X - diag(diag(X));
